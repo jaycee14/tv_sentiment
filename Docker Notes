@@ -1,0 +1,39 @@
+Docker Notes
+
+Useful web pages
+
+https://www.linux.com/tutorials/docker-volumes-and-networks-compose/
+https://mukulrathi.com/docker-postgres-flask/
+https://wsvincent.com/django-docker-postgresql/
+https://www.tutorialspoint.com/flask/flask_sqlalchemy.htm
+https://www.paepper.com/blog/posts/pytorch-gpu-inference-with-docker/
+https://github.com/NVIDIA/nvidia-docker
+
+Docker Hubs
+https://hub.docker.com/_/python
+
+Dcoker Commands
+
+--build server
+docker build -t api_server .
+
+
+-- run with gpu support
+docker run -p 8008:8008 --gpus all api_server
+
+-- run interactive?
+docker exec -it api_server bash
+
+Flask Notes
+
+export FLASK_APP=api_server.py
+
+flask run
+
+
+POST Test
+
+curl --header "Content-Type: application/json" \
+  --request POST \
+  --data '{"text":"mindhunter is awesome"}' \
+  http://localhost:8008/api/v1/predict

@@ -1,0 +1,21 @@
+version: "3" #docker-compose version
+services: #the containers in the network
+  endpoint: #container name
+    #build: ./src/ #specify directory of Dockerfile
+    image: app_server
+    env_file: ./database.env #environment variable file
+    volumes: #mount volumes (host:container)
+      - ./src:/usr/src/app
+    ports: #map ports (host:container)
+      - 5000:80
+    depends_on: # other containers it needs in order to run
+      - database
+    #command:
+  database:
+    image: postgres #if using an existing image
+    restart: always #what to do if container crashes
+    env_file: ./database.env
+    volumes: # mapping the host folder to the data folder in the container - to persist the data
+      - ./postgres_data:/var/lib/postgresql/data/
+    #environment:
+    #  - POSTGRES_USER=____ # specify individual env variables.

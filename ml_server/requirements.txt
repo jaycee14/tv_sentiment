@@ -1,0 +1,6 @@
+pandas
+numpy
+Flask
+Flask-Cors
+fastai
+

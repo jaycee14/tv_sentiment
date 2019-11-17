@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang = "en">
+   <head></head>
+   <body>
+      <h3>
+         <a href = "{{ url_for('show_all') }}">Comments - Flask 
+            SQLAlchemy example</a>
+      </h3>
+      
+      <hr/>
+      {%- for message in get_flashed_messages() %}
+         {{ message }}
+      {%- endfor %}
+		
+      <h3>Shows</h3>
+      
+      <table>
+         <thead>
+            <tr>
+               <th>Name</th>
+               <th>Service</th>
+            </tr>
+         </thead>
+
+         <tbody>
+            {% for show in shows %}
+               <tr>
+                  <td>{{ show.name }}</td>
+                  <td>{{ show.service }}</td>
+               </tr>
+            {% endfor %}
+         </tbody>
+      </table>
+   </body>
+</html>

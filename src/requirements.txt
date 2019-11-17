@@ -1,0 +1,8 @@
+pandas
+numpy
+Flask
+Flask-Cors
+psycopg2-binary
+SQLAlchemy
+flask-sqlalchemy
+

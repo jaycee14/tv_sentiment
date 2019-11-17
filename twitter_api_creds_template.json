@@ -1,0 +1,5 @@
+{"twitter": {"api": {"pause": 1,
+   "app": {"key": "ABCD",
+    "secret": "ABCD",
+    "token": "ABCD",
+    "token_secret": "ABCD"}}}}
