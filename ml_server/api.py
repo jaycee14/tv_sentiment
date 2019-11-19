@@ -14,7 +14,7 @@ from flask import Blueprint, jsonify, request
 
 api = Blueprint('api', __name__)
 
-defaults.device = torch.device('cuda')
+defaults.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
 model = load_learner('.')
 
@@ -29,6 +29,9 @@ def predict():
     input = request.json
     text = input['text']
 
+    # this is the real deal
     cat, ten, score = model.predict(text)
-
     return jsonify((cat.__str__(), score[ten].item()))
+
+    # this is a test reply until docker compose catches up with cuda
+    #return jsonify(('Test', 42))

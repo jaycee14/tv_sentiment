@@ -19,7 +19,11 @@ docker build -t api_server .
 
 
 -- run with gpu support
+-- this approach is needed until docker compose will support gpu pass through
 docker run -p 8008:8008 --gpus all api_server
+
+then run
+docker-compose up
 
 -- run interactive?
 docker exec -it api_server bash
