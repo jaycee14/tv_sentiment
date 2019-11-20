@@ -28,6 +28,13 @@ docker-compose up
 -- run interactive?
 docker exec -it api_server bash
 
+#log into database
+docker exec -it tvsentiment_database_1 bash
+
+psql -U user_pg -h localhost -d tv_sentiment
+
+docker exec -it tvsentiment_database_1 bash
+
 Flask Notes
 
 export FLASK_APP=api_server.py

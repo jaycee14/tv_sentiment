@@ -10,6 +10,7 @@ services: #the containers in the network
       - 5000:80
     depends_on: # other containers it needs in order to run
       - database
+    restart: always
     #  - ml_server
     #command:
   database:

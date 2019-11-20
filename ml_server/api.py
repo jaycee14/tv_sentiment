@@ -31,7 +31,7 @@ def predict():
 
     # this is the real deal
     cat, ten, score = model.predict(text)
-    return jsonify((cat.__str__(), score[ten].item()))
+    return jsonify({'label': cat.__str__(), 'score': score[ten].item()})
 
     # this is a test reply until docker compose catches up with cuda
     #return jsonify(('Test', 42))
