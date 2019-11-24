@@ -17,7 +17,8 @@
       <table>
          <thead>
             <tr>
-               <th>id</th>
+               <th>show id</th>
+               <th>query id</th>
                <th>Text</th>
                <th>Label</th>
                 <th>Score</th>
@@ -28,6 +29,7 @@
             {% for comment in comments %}
                <tr>
                   <td>{{ comment.show_id }}</td>
+                  <td>{{ comment.query_id }}</td>
                   <td>{{ comment.comment_text }}</td>
                   <td>{{ comment.sentiment_label }}</td>
                    <td>{{ comment.sentiment_score }}</td>

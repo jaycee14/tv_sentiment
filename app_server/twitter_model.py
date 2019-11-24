@@ -18,12 +18,13 @@ class Twitter_Retrieve:
                                        self.conf["twitter"]["api"]["app"]["token_secret"])
             self.twitter = Twitter(self.auth, parser=JSONParser())
 
-    def search(self, search_str):
-        results = self.twitter.search(search_str, lang='en')
+    def search(self, search_str, since_id=-1, num_entries=15):
+        results = self.twitter.search(search_str, lang='en', count=num_entries, tweet_mode='extended', since_id=since_id)
 
         texts = []
         for tweet in results['statuses']:
-            text = tweet['text']
+            text = tweet['full_text']
             texts.append(text)
+            last_id = tweet['id']
 
-        return texts
+        return texts, last_id

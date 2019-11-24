@@ -26,6 +26,6 @@ services: #the containers in the network
 #    restart: always
 #    command:
 
-volumes:
-  postgres_data:
-  app_server:
+#volumes:
+#  postgres_data:
+#  app_server:

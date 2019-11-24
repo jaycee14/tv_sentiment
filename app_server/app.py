@@ -1,31 +1,21 @@
 # standard imports
-import json
 import os
-import uuid
-import io
-import time
-import random
+
 import requests
-
-# third party imports
-# import psycopg2
-# from psycopg2 import sql
-# import sqlalchemy
-# from sqlalchemy import create_engine
-import pandas as pd
-
 from flask import Flask, render_template, jsonify, redirect, url_for
-# from flask_sqlalchemy import SQLAlchemy
-from db_models import db, Shows, Comments
+from sqlalchemy import func
+
+from db_models import db, Shows, Comments, Queries
 from twitter_model import Twitter_Retrieve
 
 db_name = os.environ['POSTGRES_DB']
 db_user = os.environ['POSTGRES_USER']
 db_password = os.environ['POSTGRES_PASSWORD']
-host_addr = "database:5432"
+# host_addr = "database:5432"
+host_addr = os.environ['DB_HOST']
 
-# ml_addr = "ml_server:8008"
-ml_addr = "192.168.1.135:8008"
+#ml_addr = "ml_server:8008"
+ml_addr = "192.168.1.151:8008"
 
 app = Flask(__name__)
 
@@ -36,6 +26,8 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # db = SQLAlchemy(app)
 db.init_app(app)
+
+# db.create_all()
 
 twitter = Twitter_Retrieve()
 
@@ -53,8 +45,14 @@ def show_comments():
 @app.route('/add')
 def add():
     show = Shows('daybreak', 'netflix', True)
+
     db.session.add(show)
     db.session.commit()
+
+    query = Queries(show.id, -1, 'daybreak netflix')
+    db.session.add(query)
+    db.session.commit()
+
     return render_template('show_all.html', shows=Shows.query.all())
 
 
@@ -73,25 +71,49 @@ def run_model():
     # get shows
     shows = Shows.query.filter_by(active=True).all()
 
-    for show in shows:
-        # query twitter
-        results = twitter.search(f'{show.name} {show.service}')
+    show_list = [show.id for show in shows]
 
+    # get last ids for shows, need latest
+    queries = db.session.query(Queries.show_id, Queries.last_extract_id, Queries.query_string,
+                               func.max(Queries.query_date).label('query_date')) \
+        .group_by(Queries.show_id, Queries.last_extract_id, Queries.query_string)  # \
+    # .filter_by(Queries.show_id._in(show_list))
+
+    temp_put = []
+
+    for query in queries:
+        temp_put.append([query.show_id, query.last_extract_id, query.query_string, query.query_date])
+
+        # query twitter using the latest since_id
+        results, last_id = twitter.search(query.query_string, since_id=query.last_extract_id)
+
+        # record this new twitter query
+        new_query = Queries(query.show_id, last_id, query.query_string)
+        db.session.add(new_query)
+        db.session.commit()
+        new_query_id = new_query.id
+        #
         # run results through model
         for res in results:
             display_res = {}
             response = requests.post(url, json={"text": res}).json()
-            comments.append(Comments(show.id, res, response['label'], response['score']))
-
+            comments.append(
+                Comments(query.show_id, res, response['label'], response['score'], response['model'], new_query_id))
+    #
     db.session.add_all(comments)
     db.session.commit()
 
     # store results and messages
     return redirect(url_for('show_comments'))
 
+    # return jsonify(temp_put)
 
-if __name__ == '__main__':
-    print("running my app")
-    # db.drop_all()
-    # db.create_all()
-    app.run(debug=True, host='0.0.0.0', port=80)
+
+print("running my app")
+app.run(debug=True, host='0.0.0.0', port=80)
+
+# if __name__ == '__main__':
+#     print("running my app")
+#     # db.drop_all()
+#
+#     app.run(debug=True, host='0.0.0.0', port=80)

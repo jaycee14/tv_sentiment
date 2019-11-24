@@ -8,6 +8,7 @@ https://wsvincent.com/django-docker-postgresql/
 https://www.tutorialspoint.com/flask/flask_sqlalchemy.htm
 https://www.paepper.com/blog/posts/pytorch-gpu-inference-with-docker/
 https://github.com/NVIDIA/nvidia-docker
+https://stackoverflow.com/questions/39773125/use-flask-sqlalchemy-models-in-jupyter-notebook
 
 Docker Hubs
 https://hub.docker.com/_/python
@@ -27,6 +28,9 @@ docker-compose up
 
 -- run interactive?
 docker exec -it api_server bash
+
+docker run --volume /home/jjc/Projects/postgres_data:/var/lib/postgresql/data/ -p 5432:5432  --env-file database.env --name temp_postgres postgres
+
 
 #log into database
 docker exec -it tvsentiment_database_1 bash
