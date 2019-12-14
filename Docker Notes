@@ -29,8 +29,15 @@ docker-compose up
 -- run interactive?
 docker exec -it api_server bash
 
-docker run --volume /home/jjc/Projects/postgres_data:/var/lib/postgresql/data/ -p 5432:5432  --env-file database.env --name temp_postgres postgres
+docker exec -it temp_postgres bash
 
+#log into app / flask server (once docker compose is up)
+
+docker exec -it tvsentiment_endpoint_1 bash
+
+flask shell
+
+from db_models import db
 
 #log into database
 docker exec -it tvsentiment_database_1 bash
@@ -52,3 +59,16 @@ curl --header "Content-Type: application/json" \
   --request POST \
   --data '{"text":"mindhunter is awesome"}' \
   http://localhost:8008/api/v1/predict
+
+
+Docker Volumes...
+
+-- creating a named volume
+docker volume create postgres_db_data
+--mountpoint
+/var/lib/docker/volumes/postgres_db_data/_data
+
+in docker compose I use the above path to the volume, in docker run I can use the name but in both cases they now point to the same data thank fuck!
+
+-- this creates a new container but uses the persisted data and maps the ports to the host so I can connect via jupyter
+docker run --env-file database.env --volume postgres_db_data:/var/lib/postgresql/data/ -p 5432:5432 --name temp_postgres postgres

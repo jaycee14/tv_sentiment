@@ -11,11 +11,10 @@ from twitter_model import Twitter_Retrieve
 db_name = os.environ['POSTGRES_DB']
 db_user = os.environ['POSTGRES_USER']
 db_password = os.environ['POSTGRES_PASSWORD']
-# host_addr = "database:5432"
 host_addr = os.environ['DB_HOST']
 
-#ml_addr = "ml_server:8008"
-ml_addr = "192.168.1.151:8008"
+# ml_addr = "ml_server:8008"
+ml_addr = "192.168.1.104:8008"
 
 app = Flask(__name__)
 
@@ -23,11 +22,6 @@ DB_URL = 'postgresql+psycopg2://{user}:{pw}@{url}/{db}'.format(user=db_user, pw=
 
 app.config['SQLALCHEMY_DATABASE_URI'] = DB_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-# db = SQLAlchemy(app)
-db.init_app(app)
-
-# db.create_all()
 
 twitter = Twitter_Retrieve()
 
@@ -44,12 +38,12 @@ def show_comments():
 
 @app.route('/add')
 def add():
-    show = Shows('daybreak', 'netflix', True)
+    show = Shows('v wars', 'netflix', True)
 
     db.session.add(show)
     db.session.commit()
 
-    query = Queries(show.id, -1, 'daybreak netflix')
+    query = Queries(show.id, -1, 'v wars netflix')
     db.session.add(query)
     db.session.commit()
 
@@ -76,8 +70,7 @@ def run_model():
     # get last ids for shows, need latest
     queries = db.session.query(Queries.show_id, Queries.last_extract_id, Queries.query_string,
                                func.max(Queries.query_date).label('query_date')) \
-        .group_by(Queries.show_id, Queries.last_extract_id, Queries.query_string)  # \
-    # .filter_by(Queries.show_id._in(show_list))
+        .group_by(Queries.show_id, Queries.last_extract_id, Queries.query_string)
 
     temp_put = []
 
@@ -92,13 +85,15 @@ def run_model():
         db.session.add(new_query)
         db.session.commit()
         new_query_id = new_query.id
-        #
+
         # run results through model
         for res in results:
-            display_res = {}
-            response = requests.post(url, json={"text": res}).json()
+            twitter_text = res['text']
+            twitter_date = res['date']
+            response = requests.post(url, json={"text": twitter_text}).json()
             comments.append(
-                Comments(query.show_id, res, response['label'], response['score'], response['model'], new_query_id))
+                Comments(query.show_id, twitter_text, response['label'], response['score'], response['model'], new_query_id,
+                         twitter_date))
     #
     db.session.add_all(comments)
     db.session.commit()
@@ -106,14 +101,13 @@ def run_model():
     # store results and messages
     return redirect(url_for('show_comments'))
 
-    # return jsonify(temp_put)
 
 
 print("running my app")
+
+db.app = app
+db.init_app(app)
+db.create_all()
+
 app.run(debug=True, host='0.0.0.0', port=80)
 
-# if __name__ == '__main__':
-#     print("running my app")
-#     # db.drop_all()
-#
-#     app.run(debug=True, host='0.0.0.0', port=80)

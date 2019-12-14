@@ -1,7 +1,8 @@
 from tweepy import OAuthHandler
 from tweepy.api import API as Twitter
-from tweepy.error import TweepError
 from tweepy.parsers import JSONParser
+from dateutil import parser
+from pytz import utc
 
 import json
 
@@ -19,12 +20,16 @@ class Twitter_Retrieve:
             self.twitter = Twitter(self.auth, parser=JSONParser())
 
     def search(self, search_str, since_id=-1, num_entries=15):
-        results = self.twitter.search(search_str, lang='en', count=num_entries, tweet_mode='extended', since_id=since_id)
+        results = self.twitter.search(search_str, lang='en', count=num_entries, tweet_mode='extended',
+                                      since_id=since_id)
 
         texts = []
+        last_id = since_id
         for tweet in results['statuses']:
-            text = tweet['full_text']
-            texts.append(text)
+            dt = parser.parse(tweet['created_at'])
+            dt_utc = dt.astimezone(utc)
+            responce = {'text': tweet['full_text'], 'date': dt_utc}
+            texts.append(responce)
             last_id = tweet['id']
 
         return texts, last_id

@@ -29,16 +29,18 @@ class Comments(db.Model):
     sentiment_score = db.Column('sentiment_score', db.Float())
     model_used = db.Column('model_used', db.String(100))
     query_id = db.Column('query_id', db.Integer)
+    comment_date = db.Column('comment_date_utc', db.DateTime)
 
     # twitter id
 
-    def __init__(self, show, comment_text, label, score, model, query):
+    def __init__(self, show, comment_text, label, score, model, query, comment_date):
         self.show_id = show
         self.comment_text = comment_text
         self.sentiment_label = label
         self.sentiment_score = score
         self.model_used = model
         self.query_id = query
+        self.comment_date = comment_date
 
 
 class Queries(db.Model):
