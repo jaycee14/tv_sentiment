@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+</head>
+<body>
+<div class="chart-container" style="position: relative; height:50vh; width:100vw">
+    <canvas id="myChart"></canvas>
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="../js/Chart.bundle.min.js"></script>
+<script>
+
+var url = new URL(window.location.href);
+var file = 'line_' + url.searchParams.get("show") + '.json';
+
+
+
+var chart_data;
+$.getJSON("./"+file, function (json) {
+    chart_data = json;
+    //console.log(chart_data);
+
+    var ctx = document.getElementById('myChart');
+    var myChart = new Chart(ctx, chart_data);
+});
+
+</script>
+</body>
+</html>

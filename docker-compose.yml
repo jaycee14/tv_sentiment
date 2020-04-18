@@ -20,12 +20,12 @@ services: #the containers in the network
     volumes: # mapping the host folder to the data folder in the container - to persist the data
       #- ./postgres_data:/var/lib/postgresql/data/
       - /var/lib/docker/volumes/postgres_db_data/_data:/var/lib/postgresql/data/
-#  ml_server: # when docker compose will allow gpu pass through in a later version
-#    image: api_server
-#    build: ./ml_server
-#    #gpus: all # future command to allow container to use gpu featues!
-#    restart: always
-#    command:
+  ml_server: # when docker compose will allow gpu pass through in a later version
+    image: api_server
+    build: ./ml_server
+    #gpus: all # future command to allow container to use gpu featues!
+    restart: always
+    #command:
 
 #volumes:
 #  postgres_db_data:

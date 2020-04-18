@@ -2,7 +2,7 @@
 import os
 
 import requests
-from flask import Flask, render_template, jsonify, redirect, url_for
+from flask import Flask, render_template, jsonify, redirect, url_for, session
 from sqlalchemy import func
 
 from db_models import db, Shows, Comments, Queries
@@ -13,8 +13,8 @@ db_user = os.environ['POSTGRES_USER']
 db_password = os.environ['POSTGRES_PASSWORD']
 host_addr = os.environ['DB_HOST']
 
-# ml_addr = "ml_server:8008"
-ml_addr = "192.168.1.104:8008"
+ml_addr = "ml_server:8008"  # method to use once in the same compose group
+# ml_addr = "192.168.1.123:8008"
 
 app = Flask(__name__)
 
@@ -25,6 +25,13 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 twitter = Twitter_Retrieve()
 
+
+# def get_ip_address():
+#     from subprocess import check_output
+#
+#     ips = check_output(['hostname', '--all-ip-addresses']).split(' ',maxsplit=1)
+#
+#     return f'{ips}:8008'
 
 @app.route('/')
 def show_all():
@@ -38,13 +45,24 @@ def show_comments():
 
 @app.route('/add')
 def add():
-    show = Shows('v wars', 'netflix', True)
+    show_name = 'devs'
+    service = 'bbc'
+    show = Shows(show_name, service, True)
 
     db.session.add(show)
     db.session.commit()
 
-    query = Queries(show.id, -1, 'v wars netflix')
+    query = Queries(show.id, -1, f'{show_name} {service}')
     db.session.add(query)
+    db.session.commit()
+
+    return render_template('show_all.html', shows=Shows.query.all())
+
+
+@app.route('/toggle/<id_val>')
+def toggle_active(id_val):
+    show = Shows.query.filter_by(id=id_val).one()
+    show.active = not show.active
     db.session.commit()
 
     return render_template('show_all.html', shows=Shows.query.all())
@@ -62,23 +80,19 @@ def run_model():
     url = f'http://{ml_addr}/api/v1/predict'
     comments = []
 
-    # get shows
+    # get active shows
     shows = Shows.query.filter_by(active=True).all()
-
     show_list = [show.id for show in shows]
 
-    # get last ids for shows, need latest
-    queries = db.session.query(Queries.show_id, Queries.last_extract_id, Queries.query_string,
-                               func.max(Queries.query_date).label('query_date')) \
-        .group_by(Queries.show_id, Queries.last_extract_id, Queries.query_string)
-
-    temp_put = []
+    # get last ids for active shows, need latest
+    queries = db.session.query(Queries.show_id, Queries.query_string,
+                               func.max(Queries.last_extract_id).label('last_extract_id')) \
+        .filter(Queries.show_id.in_(show_list)) \
+        .group_by(Queries.show_id, Queries.query_string)
 
     for query in queries:
-        temp_put.append([query.show_id, query.last_extract_id, query.query_string, query.query_date])
-
         # query twitter using the latest since_id
-        results, last_id = twitter.search(query.query_string, since_id=query.last_extract_id)
+        results, last_id = twitter.search(query.query_string, since_id=query.last_extract_id, num_entries=50)
 
         # record this new twitter query
         new_query = Queries(query.show_id, last_id, query.query_string)
@@ -88,11 +102,12 @@ def run_model():
 
         # run results through model
         for res in results:
-            twitter_text = res['text']
+            twitter_text = res['text'][:299]
             twitter_date = res['date']
             response = requests.post(url, json={"text": twitter_text}).json()
             comments.append(
-                Comments(query.show_id, twitter_text, response['label'], response['score'], response['model'], new_query_id,
+                Comments(query.show_id, twitter_text, response['label'], response['score'], response['model'],
+                         new_query_id,
                          twitter_date))
     #
     db.session.add_all(comments)
@@ -102,12 +117,9 @@ def run_model():
     return redirect(url_for('show_comments'))
 
 
+if __name__ == '__main__':
+    print("running tv sentiment app")
 
-print("running my app")
-
-db.app = app
-db.init_app(app)
-db.create_all()
-
-app.run(debug=True, host='0.0.0.0', port=80)
-
+    db.app = app
+    db.init_app(app)
+    app.run(debug=True, host='0.0.0.0', port=80)

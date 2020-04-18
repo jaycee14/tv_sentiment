@@ -8,6 +8,7 @@ import json
 
 
 class Twitter_Retrieve:
+    """Wrapper class to add twitter management functionality required."""
 
     def __init__(self):
         with open('twitter_api_creds.json', "rb") as f:
@@ -20,16 +21,19 @@ class Twitter_Retrieve:
             self.twitter = Twitter(self.auth, parser=JSONParser())
 
     def search(self, search_str, since_id=-1, num_entries=15):
+        """Twitter search that performs search since last id, timezone conversion and json reduction."""
+
         results = self.twitter.search(search_str, lang='en', count=num_entries, tweet_mode='extended',
                                       since_id=since_id)
 
         texts = []
-        last_id = since_id
+        ids_seen = []
+        ids_seen.append(since_id)
         for tweet in results['statuses']:
             dt = parser.parse(tweet['created_at'])
             dt_utc = dt.astimezone(utc)
             responce = {'text': tweet['full_text'], 'date': dt_utc}
             texts.append(responce)
-            last_id = tweet['id']
+            ids_seen.append(tweet['id'])
 
-        return texts, last_id
+        return texts, max(ids_seen)

@@ -17,6 +17,7 @@
       <table>
          <thead>
             <tr>
+               <th>id</th>
                <th>Name</th>
                <th>Service</th>
                <th>Active</th>
@@ -26,6 +27,7 @@
          <tbody>
             {% for show in shows %}
                <tr>
+                  <td>{{ show.id }}</td>
                   <td>{{ show.name }}</td>
                   <td>{{ show.service }}</td>
                   <td>{{ show.active }}</td>

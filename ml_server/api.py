@@ -14,9 +14,10 @@ from flask import Blueprint, jsonify, request
 
 api = Blueprint('api', __name__)
 
-defaults.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+#defaults.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+defaults.device = torch.device('cpu')
 
-model = load_learner('.')
+model = load_learner(path='.',file='export_32.pkl')
 
 
 @api.route('/test')
