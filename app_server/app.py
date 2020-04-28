@@ -24,7 +24,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = DB_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 twitter = Twitter_Retrieve()
-
+NUMBER_OF_TWEETS = 100
 
 # def get_ip_address():
 #     from subprocess import check_output
@@ -40,13 +40,14 @@ def show_all():
 
 @app.route('/show_comments')
 def show_comments():
-    return render_template('show_comments.html', comments=Comments.query.all())
+    comments = db.session.query(Comments).order_by(Comments.query_id.desc())
+    return render_template('show_comments.html', comments=comments)
 
 
 @app.route('/add')
 def add():
-    show_name = 'devs'
-    service = 'bbc'
+    show_name = 'parks and recreation'
+    service = ''
     show = Shows(show_name, service, True)
 
     db.session.add(show)
@@ -92,26 +93,28 @@ def run_model():
 
     for query in queries:
         # query twitter using the latest since_id
-        results, last_id = twitter.search(query.query_string, since_id=query.last_extract_id, num_entries=50)
+        results, last_id = twitter.search(query.query_string, since_id=query.last_extract_id, num_entries=NUMBER_OF_TWEETS)
 
-        # record this new twitter query
-        new_query = Queries(query.show_id, last_id, query.query_string)
-        db.session.add(new_query)
-        db.session.commit()
-        new_query_id = new_query.id
+        if len(results) > 0:
 
-        # run results through model
-        for res in results:
-            twitter_text = res['text'][:299]
-            twitter_date = res['date']
-            response = requests.post(url, json={"text": twitter_text}).json()
-            comments.append(
-                Comments(query.show_id, twitter_text, response['label'], response['score'], response['model'],
-                         new_query_id,
-                         twitter_date))
-    #
-    db.session.add_all(comments)
-    db.session.commit()
+            # record this new twitter query
+            new_query = Queries(query.show_id, last_id, query.query_string)
+            db.session.add(new_query)
+            db.session.commit()
+            new_query_id = new_query.id
+
+            # run results through model
+            for res in results:
+                twitter_text = res['text'][:299]
+                twitter_date = res['date']
+                response = requests.post(url, json={"text": twitter_text}).json()
+                comments.append(
+                    Comments(query.show_id, twitter_text, response['label'], response['score'], response['model'],
+                             new_query_id,
+                             twitter_date))
+            #
+            db.session.add_all(comments)
+            db.session.commit()
 
     # store results and messages
     return redirect(url_for('show_comments'))
@@ -123,3 +126,7 @@ if __name__ == '__main__':
     db.app = app
     db.init_app(app)
     app.run(debug=True, host='0.0.0.0', port=80)
+
+
+# proper add screen with a form
+# batched ai send

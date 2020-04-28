@@ -27,8 +27,8 @@ class Twitter_Retrieve:
                                       since_id=since_id)
 
         texts = []
-        ids_seen = []
-        ids_seen.append(since_id)
+        ids_seen = [since_id]
+
         for tweet in results['statuses']:
             dt = parser.parse(tweet['created_at'])
             dt_utc = dt.astimezone(utc)

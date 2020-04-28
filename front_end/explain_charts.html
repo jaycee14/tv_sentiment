@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+</head>
+<body>
+    <div><a href="bar_chart.html">Home</a>&nbsp<a href="explain_charts.html">Explain Results</a></div>
+    <div>
+        <h1>TV Sentiment Explain</h1>
+        <p>For the top three postitve and negative tweets found this page aims to show how the model was influenced on a word level. Each sentence has been coloured according to how much influence it gave to the model - the brighter the green the more influence it gave. (Works for both postiive and negative tweets i.e. bright green on a negative tweet is the negative influence). These infleunces have been learnt from the IMDB training set reflecting the biases of the original reviewers.</p>
+        <p>Clicking a tweet will update the below chart for a clearer view.</p>
+    </div>
+    <div id='menu'>
+        <ul id='show_list'>
+            
+        </ul>
+    </div>
+    <div id='textdiv' style="word-wrap: break-word; font-size: 24px;">
+    </div>
+    <hr />  
+    <div class="chart-container" style="position: relative; height:50vh; width:100vw">
+
+    <canvas id="myChart"></canvas>
+    </div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="../js/Chart.bundle.min.js"></script>
+<script>
+
+var ctx;
+var myChart;
+    
+$.getJSON("./explain_charts.json", function (json) {
+    
+    console.log('running');
+
+    var show_register = json['show'];
+    var pos_vals = json['pos'];
+    var neg_vals = json['neg'];
+
+    var data_holder = {};
+
+    var chart_data = null;
+
+    var sentiments = ['pos','neg'];
+    var show_lu={};
+    var targets=[];
+
+     for (s in show_register){
+        show_lu[show_register[s]['show_id']]=show_register[s]['name'];
+    }
+    console.log(show_lu);
+
+    for (s in sentiments){
+
+        var sentiment = sentiments[s];
+        var vals = json[sentiment];
+
+        for (v in vals){
+            var val = vals[v];
+
+            var show_id = val['show_id'];
+            if(data_holder.hasOwnProperty(show_id)==false)
+            {
+                data_holder[show_id]={'name':show_lu[show_id]};
+                
+            }
+
+            if(data_holder[show_id].hasOwnProperty(sentiment)==false)
+            {
+                data_holder[show_id][sentiment]=[];
+            }
+
+            data_holder[show_id][sentiment].push(val);
+        }
+    }
+
+    console.log(data_holder);
+
+    var str = '';
+    for (d in data_holder){
+        var show_item = data_holder[d];
+        str += '<li><h1>'+show_item['name'] +'</h1><ul>';
+
+        for (s in sentiments){
+            var sentiment = sentiments[s];
+            var items = show_item[sentiment];
+            str += '<li><h2>' + sentiment +'</h2><ul>';
+
+            for(i in items){
+                var item = items[i];
+
+                if( chart_data === null){
+                    chart_data = item['chart_data'];
+                }
+
+                var labels = item['chart_data']['data']['labels'];
+                var colours = item['chart_data']['data']['datasets'][0]['backgroundColor'];
+                var text_coloured = colourText(labels,colours);
+                var id_val = sentiment + '_' + item['show_id'] + '_' + i;
+                str += '<li><div id='+id_val+'>' + text_coloured + '</div></li>'; //items
+
+                var cd = {id:"#"+id_val, chart_data:item['chart_data']}
+                targets.push(cd);
+            }
+            str += '</ul></li>'; //sentiment
+        }
+
+        str+='</ul></li>'; //name
+    }
+    document.getElementById("show_list").innerHTML = str;
+
+
+    for(t in targets){
+        var target = targets[t];
+        $(target.id).on('click', {val:target.id, chart_data:target.chart_data}, updateChart);
+    }
+    
+    
+    //chart stuff
+
+    ctx = document.getElementById('myChart');
+    myChart = new Chart(ctx, chart_data);
+
+});
+
+function updateChart(newData){
+
+    var newChartData = newData.data.chart_data;
+
+    myChart.data.datasets = newChartData.data.datasets;
+    myChart.data.labels = newChartData.data.labels;
+
+    myChart.update();
+}
+
+
+function colourText(labels, colours){
+
+        var text_coloured ='';
+        for(var i=0;i<labels.length;i++){
+            text_coloured += '<span style="background-color:'+colours[i] +'">'+labels[i]+'&nbsp</span>'
+        }
+        return text_coloured
+}
+
+</script>
+</body>
+</html>
+
