@@ -29,6 +29,10 @@ This was kept separate in order that it could be swapped for a different model e
 
 ## Explaining the results
 
+![Explain](resources/screen3s.png)
+![Explain Chart](resources/screen4s.png)
+
+
 ### Issues Encountered
 
 * At the time of writing Docker-Compose did not have GPU pass through support. Initially I ran the NLP engine in a separate docker container with GPU pass through (available in Linux) then converted the model to default to CPU. This seemed more in line with a production system where CPUs are plentiful (for scaling) and the model is only doing the forward pass.
@@ -39,7 +43,8 @@ This was kept separate in order that it could be swapped for a different model e
 
 The output charts all use the [Chart JS](https://www.chartjs.org/ "Chart JS") library. Custom functions were written to turn dataframes into correctly formatted JSON.
 
-<img src="resources/screen1.png" width="300">
+![Bar Charts](resources/screen1s.png)
+![Line Charts](resources/screen2s.png)
 
 ## Limitations
 
