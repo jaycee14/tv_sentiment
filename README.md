@@ -39,6 +39,8 @@ This was kept separate in order that it could be swapped for a different model e
 
 The output charts all use the [Chart JS](https://www.chartjs.org/ "Chart JS") library. Custom functions were written to turn dataframes into correctly formatted JSON.
 
+<img src="resources/screen1.png" width="300">
+
 ## Limitations
 
 * Off topic tweets - occur particularly when the show name has other meanings. The service provider for each show was also added the search parameters to try and reduce this. E.g. "killing eve + bbc". A clustering algorithm / embedding distance search may be able reduce this further.
