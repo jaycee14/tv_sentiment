@@ -1,23 +1,14 @@
-# standard imports
-import json
-import os
-import uuid
-import io
-import time
-import random
 
-# third party imports
-import pandas as pd
-from fastai.text import *
+from fastai.text import load_learner, defaults
+import torch
 
 from flask import Blueprint, jsonify, request
 
 api = Blueprint('api', __name__)
 
-#defaults.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 defaults.device = torch.device('cpu')
 
-model = load_learner(path='.',file='export_32.pkl')
+model = load_learner(path='.', file='export_32.pkl')
 
 
 @api.route('/test')
@@ -30,9 +21,6 @@ def predict():
     input = request.json
     text = input['text']
 
-    # this is the real deal
     cat, ten, score = model.predict(text)
     return jsonify({'label': cat.__str__(), 'score': score[ten].item(), 'model': 'fastai'})
 
-    # this is a test reply until docker compose catches up with cuda
-    # return jsonify(('Test', 42))

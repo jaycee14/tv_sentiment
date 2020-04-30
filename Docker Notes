@@ -105,4 +105,15 @@ docker ps -a
 -- remove a container
 docker rm <name>
 
+--- create a gif
+https://stackoverflow.com/questions/3688870/create-animated-gif-from-a-set-of-jpeg-images
+--basic
+ffmpeg -f image2 -framerate 9 -i screen%d.png screenshow.gif
 
+--with scaling and better frame rate
+ffmpeg -f image2 -framerate 0.5 -i screen%d.png -vf scale=600:-1 screenshow.gif
+
+--correcting the pallette, three step process
+ffmpeg -f image2 -i screen%d.png -vf scale=600:-1:sws_dither=ed,palettegen palette.png
+ffmpeg -f image2 -framerate 0.5 -i screen%d.png video.flv
+ffmpeg -i video.flv -i palette.png -filter_complex "fps=0.5,scale=600:-1:flags=lanczos[x];[x][1:v]paletteuse" screenshow.gif

@@ -31,7 +31,6 @@ class Comments(db.Model):
     query_id = db.Column('query_id', db.Integer)
     comment_date = db.Column('comment_date_utc', db.DateTime)
 
-    # twitter id
 
     def __init__(self, show, comment_text, label, score, model, query, comment_date):
         self.show_id = show
@@ -58,8 +57,4 @@ class Queries(db.Model):
         self.last_extract_id = last_id
         self.query_string = query_string
 
-# date
-# num results
-# queries ran
-# last twitter id
-# show if#d
+

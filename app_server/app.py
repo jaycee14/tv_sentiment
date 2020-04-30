@@ -2,7 +2,7 @@
 import os
 
 import requests
-from flask import Flask, render_template, jsonify, redirect, url_for, session
+from flask import Flask, render_template, jsonify, redirect, url_for
 from sqlalchemy import func
 
 from db_models import db, Shows, Comments, Queries
@@ -25,13 +25,6 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 twitter = Twitter_Retrieve()
 NUMBER_OF_TWEETS = 100
-
-# def get_ip_address():
-#     from subprocess import check_output
-#
-#     ips = check_output(['hostname', '--all-ip-addresses']).split(' ',maxsplit=1)
-#
-#     return f'{ips}:8008'
 
 @app.route('/')
 def show_all():
@@ -127,6 +120,3 @@ if __name__ == '__main__':
     db.init_app(app)
     app.run(debug=True, host='0.0.0.0', port=80)
 
-
-# proper add screen with a form
-# batched ai send
